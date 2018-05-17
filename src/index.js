@@ -10,9 +10,11 @@ import {
   Modal,
   Animated,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   StyleSheet,
   Dimensions,
   Text,
+  Image,
   Easing,
   ViewPropTypes,
 } from 'react-native';
@@ -27,14 +29,17 @@ const window = Dimensions.get('window');
 type Props = {
   buttonComponent: React.Node,
   buttonComponentExpandRatio: number,
-  items: $ReadOnlyArray<{ +label: Label, onPress: () => void }>,
+  items: $ReadOnlyArray<{ +label: Label, icon: number, isActive: bool, onPress: () => void }>,
   componentWrapperStyle?: StyleObj,
+  selectedIcon?: number,
   overlayStyle?: StyleObj,
   tooltipContainerStyle?: StyleObj,
   labelContainerStyle?: StyleObj,
   labelSeparatorColor: string,
+  name: string,
   labelStyle?: StyleObj,
   setBelow: bool,
+  multipleSelection: bool,
   animationType?: "timing" | "spring",
   onRequestClose: () => void,
   triangleOffset: number,
@@ -72,6 +77,8 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     buttonComponentExpandRatio: PropTypes.number,
     items: PropTypes.arrayOf(PropTypes.shape({
       label: labelPropType.isRequired,
+      icon: PropTypes.number,
+      isActive: PropTypes.bool.isRequired,
       onPress: PropTypes.func.isRequired,
     })).isRequired,
     componentWrapperStyle: ViewPropTypes.style,
@@ -79,8 +86,12 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     tooltipContainerStyle: ViewPropTypes.style,
     labelContainerStyle: ViewPropTypes.style,
     labelSeparatorColor: PropTypes.string,
+    name: PropTypes.string,
+    selectedIcon: PropTypes.number,
     labelStyle: Text.propTypes.style,
+    iconStyle: Image.propTypes.style,
     setBelow: PropTypes.bool,
+    multipleSelection: PropTypes.bool,
     animationType: PropTypes.oneOf([ "timing", "spring" ]),
     onRequestClose: PropTypes.func,
     triangleOffset: PropTypes.number,
@@ -98,7 +109,8 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     labelSeparatorColor: "#E1E1E1",
     onRequestClose: () => {},
     setBelow: false,
-    delayLongPress: 100,
+    multipleSelection: false,
+    delayLongPress: 0,
     triangleOffset: 0,
   };
   wrapperComponent: ?TouchableOpacity;
@@ -150,7 +162,9 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
   }
 
   onPressItem = (userCallback: () => void) => {
-    this.toggle();
+    const multipleSelection = this.props.multipleSelection
+
+    !multipleSelection && this.toggle();
     userCallback();
   }
 
@@ -204,14 +218,16 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
           outputRange: [1, this.props.buttonComponentExpandRatio],
         });
       const tooltipTriangleLeftMargin =
-        pageX + width / 2 - tooltipContainerX_final - 10;
+        pageX + width / 2 - 10;
+
       this.setState(
         {
           x: pageX,
           y: pageY,
           width,
           height,
-          tooltipContainerX,
+          tooltipContainerX: 0,
+          // tooltipContainerX,
           tooltipContainerY,
           tooltipTriangleDown,
           tooltipTriangleLeftMargin,
@@ -234,7 +250,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     };
 
     const items = this.props.items.map((item, index) => {
-      const classes = [ this.props.labelContainerStyle ];
+      const classes = [ this.props.labelContainerStyle];
 
       if (index !== this.props.items.length - 1) {
         classes.push([
@@ -247,10 +263,15 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
         <PopoverTooltipItem
           key={index}
           label={item.label}
+          icon={item.icon}
+          isActive={item.isActive}
           onPressUserCallback={item.onPress}
           onPress={this.onPressItem}
           containerStyle={classes}
           labelStyle={this.props.labelStyle}
+          iconStyle={this.props.iconStyle}
+          selectedIcon={this.props.selectedIcon}
+          multipleSelection={this.props.multipleSelection}
         />
       );
     });
@@ -286,14 +307,16 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
       );
     }
 
+    const multipleSelection = this.props.multipleSelection
+
     return (
       <TouchableOpacity
-        ref={this.wrapperRef}
+        ref={ref => this.wrapperRef(ref)}
         style={this.props.componentWrapperStyle}
-        onPress={this.props.onPress}
-        onLongPress={this.toggle}
-        delayLongPress={this.props.delayLongPress}
-        activeOpacity={1.0}
+        onPress={() => {
+          this.toggle()
+        }}
+        hitSlop={{top: 10, bottom: 10, left: 0, right: 0}}
       >
         <Animated.View style={[
           { opacity: this.state.oppositeOpacity },
@@ -312,10 +335,12 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
             { opacity: this.state.opacity },
           ]}>
             <TouchableOpacity
-              activeOpacity={1}
-              focusedOpacity={1}
+              activeOpacity={0.5}
+              focusedOpacity={0}
               style={styles.button}
-              onPress={this.toggle}
+              onPress={() => {
+                this.toggle()
+              }}
             >
               <Animated.View
                 style={[
@@ -333,6 +358,12 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
                     styles.allItemContainer,
                     this.props.tooltipContainerStyle,
                   ]}>
+                    {multipleSelection && // container with APPLY button
+                      <View style={[styles.applyButtonContainer, {borderBottomColor: this.props.labelSeparatorColor}]}>
+                        <Text style={styles.applyTextSelect}>Select {this.props.name}</Text>
+                        <Text style={styles.applyText}>Apply</Text>
+                      </View>
+                    }
                     {items}
                   </View>
                   {triangleDown}
@@ -355,8 +386,9 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
             ],
           }}>
             <TouchableOpacity
-              onPress={this.toggle}
-              activeOpacity={1.0}
+              onPress={() => {
+                this.toggle()
+              }}
             >
               {this.props.buttonComponent}
             </TouchableOpacity>
@@ -448,7 +480,8 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     backgroundColor: 'transparent',
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
+    // alignSelf: 'stretch'
   },
   tooltipMargin: {
     borderBottomWidth: 1,
@@ -456,6 +489,9 @@ const styles = StyleSheet.create({
   tooltipContainer: {
     backgroundColor: 'transparent',
     position: 'absolute',
+    // right: 0,
+    // left: 0,
+    // width: 375
   },
   triangleDown: {
     width: 10,
@@ -493,6 +529,25 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     alignSelf: 'stretch',
     overflow: 'hidden',
+  },
+  applyButtonContainer: {
+    flexDirection: 'row',
+    height: 40,
+    backgroundColor: '#f3f3f3',
+    width: window.width,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  applyTextSelect: {
+    color: 'gray',
+    fontSize: 12
+  },
+  applyText: {
+    color: '#0088c4',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 

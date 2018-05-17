@@ -1,37 +1,65 @@
 {
-  "name": "react-native-popover-tooltip",
-  "version": "1.1.4",
+  "_from": "react-native-popover-tooltip@^1.1.4",
+  "_id": "react-native-popover-tooltip@1.1.4",
+  "_inBundle": false,
+  "_integrity": "sha1-9vISHmcl6dosAUozuUYWLBl6TrQ=",
+  "_location": "/react-native-popover-tooltip",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "react-native-popover-tooltip@^1.1.4",
+    "name": "react-native-popover-tooltip",
+    "escapedName": "react-native-popover-tooltip",
+    "rawSpec": "^1.1.4",
+    "saveSpec": null,
+    "fetchSpec": "^1.1.4"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/react-native-popover-tooltip/-/react-native-popover-tooltip-1.1.4.tgz",
+  "_shasum": "f6f2121e6725e9da2c014a33b946162c197a4eb4",
+  "_spec": "react-native-popover-tooltip@^1.1.4",
+  "_where": "/Users/m/QApp",
+  "author": {
+    "name": "Lu Sun"
+  },
+  "bugs": {
+    "url": "https://github.com/wookoinc/react-native-popover-tooltip/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "invariant": "^2.2.2",
+    "prop-types": "^15.6.0"
+  },
+  "deprecated": false,
   "description": "ReactNative component showing tooltip with menu items.",
-  "main": "src/index.js",
-  "scripts": {
-    "test": "jest"
+  "devDependencies": {
+    "flow-bin": "^0.56.0",
+    "react": "^16.0.0",
+    "react-native": "^0.50.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/wookoinc/react-native-popover-tooltip"
-  },
+  "homepage": "https://github.com/wookoinc/react-native-popover-tooltip",
   "keywords": [
     "reactnative",
     "popover",
     "tooltip"
   ],
-  "author": "Lu Sun",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/wookoinc/react-native-popover-tooltip/issues"
-  },
-  "homepage": "https://github.com/wookoinc/react-native-popover-tooltip",
-  "dependencies": {
-    "invariant": "^2.2.2",
-    "prop-types": "^15.6.0"
-  },
+  "main": "src/index.js",
+  "name": "react-native-popover-tooltip",
   "peerDependencies": {
     "react": "*",
     "react-native": "*"
   },
-  "devDependencies": {
-    "react": "^16.0.0",
-    "react-native": "^0.50.1",
-    "flow-bin": "^0.56.0"
-  }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wookoinc/react-native-popover-tooltip.git"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "version": "1.1.4"
 }

@@ -11,6 +11,7 @@ import {
   StyleSheet,
   Text,
   ViewPropTypes,
+  Image
 } from 'react-native';
 import PropTypes from 'prop-types';
 
@@ -24,6 +25,9 @@ type Props = {
   onPress: (userCallback: () => void) => void,
   onPressUserCallback: () => void,
   label: Label,
+  icon: number,
+  isActive: bool,
+  multipleSelection: bool,
   containerStyle: ?StyleObj,
   labelStyle: ?StyleObj,
 };
@@ -33,6 +37,9 @@ class PopoverTooltipItem extends React.PureComponent<Props> {
     onPress: PropTypes.func.isRequired,
     onPressUserCallback: PropTypes.func.isRequired,
     label: labelPropType.isRequired,
+    icon: PropTypes.number,
+    isActive: PropTypes.bool.isRequired,
+    multipleSelection: PropTypes.bool,
     containerStyle: ViewPropTypes.style,
     labelStyle: Text.propTypes.style,
   };
@@ -43,12 +50,22 @@ class PopoverTooltipItem extends React.PureComponent<Props> {
 
   render() {
     const label = typeof this.props.label === 'string'
-      ? <Text style={this.props.labelStyle}>{this.props.label}</Text>
+      ? <Text style={[this.props.labelStyle, {marginLeft: 10}]}>{this.props.label}</Text>
       : this.props.label();
+
+    const icon = typeof this.props.icon === 'number'
+      ? <Image source={this.props.icon} style={this.props.iconStyle}/>
+      : this.props.icon();
+    const isActive = this.props.isActive
+
     return (
       <View style={[styles.itemContainer, this.props.containerStyle]}>
-        <TouchableOpacity onPress={this.onPress}>
-          {label}
+        <TouchableOpacity style={styles.itemInnerContainer} onPress={this.onPress}>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            {icon}
+            {label}
+          </View>
+          {isActive && <Image source={this.props.selectedIcon} style={styles.selectedIcon}/>}
         </TouchableOpacity>
       </View>
     );
@@ -62,7 +79,18 @@ class PopoverTooltipItem extends React.PureComponent<Props> {
 
 const styles = StyleSheet.create({
   itemContainer: {
-    padding: 10,
+    // padding: 15
+  },
+  itemInnerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10
+  },
+  selectedIcon: {
+    resizeMode: 'contain',
+    width: 15,
+    height: 15
   },
 });
 
