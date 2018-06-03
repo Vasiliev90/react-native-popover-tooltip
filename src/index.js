@@ -29,7 +29,7 @@ const window = Dimensions.get('window');
 type Props = {
   buttonComponent: React.Node,
   buttonComponentExpandRatio: number,
-  items: $ReadOnlyArray<{ +label: Label, icon: number, isActive: bool, onPress: () => void }>,
+  items: $ReadOnlyArray<{ +label: Label, isActive: bool, onPress: () => void }>,
   componentWrapperStyle?: StyleObj,
   selectedIcon?: number,
   overlayStyle?: StyleObj,
@@ -77,7 +77,6 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     buttonComponentExpandRatio: PropTypes.number,
     items: PropTypes.arrayOf(PropTypes.shape({
       label: labelPropType.isRequired,
-      icon: PropTypes.number,
       isActive: PropTypes.bool.isRequired,
       onPress: PropTypes.func.isRequired,
     })).isRequired,
@@ -89,7 +88,6 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     name: PropTypes.string,
     selectedIcon: PropTypes.number,
     labelStyle: Text.propTypes.style,
-    iconStyle: Image.propTypes.style,
     setBelow: PropTypes.bool,
     multipleSelection: PropTypes.bool,
     animationType: PropTypes.oneOf([ "timing", "spring" ]),
@@ -263,13 +261,11 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
         <PopoverTooltipItem
           key={index}
           label={item.label}
-          icon={item.icon}
           isActive={item.isActive}
           onPressUserCallback={item.onPress}
           onPress={this.onPressItem}
           containerStyle={classes}
           labelStyle={this.props.labelStyle}
-          iconStyle={this.props.iconStyle}
           selectedIcon={this.props.selectedIcon}
           multipleSelection={this.props.multipleSelection}
         />

@@ -25,7 +25,6 @@ type Props = {
   onPress: (userCallback: () => void) => void,
   onPressUserCallback: () => void,
   label: Label,
-  icon: number,
   isActive: bool,
   multipleSelection: bool,
   containerStyle: ?StyleObj,
@@ -37,7 +36,6 @@ class PopoverTooltipItem extends React.PureComponent<Props> {
     onPress: PropTypes.func.isRequired,
     onPressUserCallback: PropTypes.func.isRequired,
     label: labelPropType.isRequired,
-    icon: PropTypes.number,
     isActive: PropTypes.bool.isRequired,
     multipleSelection: PropTypes.bool,
     containerStyle: ViewPropTypes.style,
@@ -53,16 +51,12 @@ class PopoverTooltipItem extends React.PureComponent<Props> {
       ? <Text style={[this.props.labelStyle, {marginLeft: 10}]}>{this.props.label}</Text>
       : this.props.label();
 
-    const icon = typeof this.props.icon === 'number'
-      ? <Image source={this.props.icon} style={this.props.iconStyle}/>
-      : this.props.icon();
     const isActive = this.props.isActive
 
     return (
       <View style={[styles.itemContainer, this.props.containerStyle]}>
         <TouchableOpacity style={styles.itemInnerContainer} onPress={this.onPress}>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            {icon}
             {label}
           </View>
           {isActive && <Image source={this.props.selectedIcon} style={styles.selectedIcon}/>}
