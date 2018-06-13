@@ -47,6 +47,7 @@ type Props = {
   onOpenTooltipMenu?: () => void,
   onCloseTooltipMenu?: () => void,
   onPress?: () => void,
+  onReset?: () => void,
   componentContainerStyle?: StyleObj,
   timingConfig?: { duration?: number },
   springConfig?: { tension?: number, friction?: number },
@@ -97,6 +98,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     onOpenTooltipMenu: PropTypes.func,
     onCloseTooltipMenu: PropTypes.func,
     onPress: PropTypes.func,
+    onReset: PropTypes.func,
     componentContainerStyle: ViewPropTypes.style,
     timingConfig: PropTypes.object,
     springConfig: PropTypes.object,
@@ -133,6 +135,8 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
       tooltipContainerY: undefined,
       buttonComponentOpacity: 0,
     };
+
+    this.onReset = this.onReset.bind(this)
   }
 
   componentWillMount() {
@@ -157,6 +161,11 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     this.setState({ willPopUp: false });
     this.showZoomingOutAnimation();
     this.props.onCloseTooltipMenu && this.props.onCloseTooltipMenu();
+  }
+
+  onReset = () => {
+    this.props.onReset && this.props.onReset();
+    this.toggle()
   }
 
   onPressItem = (userCallback: () => void) => {
@@ -355,12 +364,23 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
                     this.props.tooltipContainerStyle,
                   ]}>
                     {multipleSelection && // container with APPLY button
-                      <View style={[styles.applyButtonContainer, {borderBottomColor: this.props.labelSeparatorColor}]}>
+                      <View style={[styles.topHeaderContainer, {borderBottomColor: this.props.labelSeparatorColor}]}>
                         <Text style={styles.applyTextSelect}>Select {this.props.name}</Text>
-                        <Text style={styles.applyText}>Apply</Text>
                       </View>
                     }
                     {items}
+                    {multipleSelection && // container with APPLY button
+                      <View style={[styles.applyButtonContainer, {borderTopColor: this.props.labelSeparatorColor}]}>
+                        <View style={{flexDirection: 'row'}}>
+                            <TouchableOpacity onPress={this.onReset} style={{paddingVertical: 4, width: 60, backgroundColor: 'white', borderRadius: 7, borderWidth: 1, borderColor: '#0e3d5e', alignItems: 'center', justifyContent: 'center', marginRight: 20}}  hitSlop={{top: 10, bottom: 10, right: 10, left: 10}}>
+                                <Text style={styles.resetText}>Reset</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity disabled={false} onPress={this.toggle} style={{paddingVertical: 2, width: 60, backgroundColor: '#0e3d5e', borderRadius: 7, alignItems: 'center', justifyContent: 'center', marginRight: 10}} hitSlop={{top: 10, bottom: 10, right: 10, left: 10}}>
+                                <Text style={styles.applyText}>Apply</Text>
+                            </TouchableOpacity>
+                        </View>
+                      </View>
+                    }
                   </View>
                   {triangleDown}
                 </View>
@@ -477,7 +497,6 @@ const styles = StyleSheet.create({
   innerContainer: {
     backgroundColor: 'transparent',
     alignItems: 'flex-start',
-    // alignSelf: 'stretch'
   },
   tooltipMargin: {
     borderBottomWidth: 1,
@@ -526,7 +545,7 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     overflow: 'hidden',
   },
-  applyButtonContainer: {
+  topHeaderContainer: {
     flexDirection: 'row',
     height: 40,
     backgroundColor: '#f3f3f3',
@@ -536,15 +555,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between'
   },
+  applyButtonContainer: {
+    flexDirection: 'row',
+    height: 40,
+    backgroundColor: '#f3f3f3',
+    width: window.width,
+    paddingHorizontal: 10,
+    borderTopWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end'
+  },
   applyTextSelect: {
     color: 'gray',
     fontSize: 12
   },
   applyText: {
-    color: '#0088c4',
+    color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
   },
+  resetText: {
+    color: '#0e3d5e',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+
 });
 
 export default PopoverTooltip;
