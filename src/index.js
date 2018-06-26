@@ -26,6 +26,9 @@ import PopoverTooltipItem, { type Label, labelPropType }
 
 const window = Dimensions.get('window');
 
+const isIphoneX = window.height === 812
+const STATUS_BAR_HEIGHT = isIphoneX ? 50 : 20
+
 type Props = {
   buttonComponent: React.Node,
   buttonComponentExpandRatio: number,
@@ -91,6 +94,8 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     labelStyle: Text.propTypes.style,
     setBelow: PropTypes.bool,
     multipleSelection: PropTypes.bool,
+    showApplyButton: PropTypes.bool,
+    showResetButton: PropTypes.bool,
     animationType: PropTypes.oneOf([ "timing", "spring" ]),
     onRequestClose: PropTypes.func,
     triangleOffset: PropTypes.number,
@@ -110,6 +115,8 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     onRequestClose: () => {},
     setBelow: false,
     multipleSelection: false,
+    showApplyButton: false,
+    showResetButton: false,
     delayLongPress: 0,
     triangleOffset: 0,
   };
@@ -134,6 +141,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
       tooltipContainerX: undefined,
       tooltipContainerY: undefined,
       buttonComponentOpacity: 0,
+      hideButton: false
     };
 
     this.onReset = this.onReset.bind(this)
@@ -219,6 +227,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
           tooltipContainerY_final,
         ],
       });
+
       const buttonComponentContainerScale =
         this.state.tooltipContainerScale.interpolate({
           inputRange: [0, 1],
@@ -235,11 +244,14 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
           height,
           tooltipContainerX: 0,
           // tooltipContainerX,
-          tooltipContainerY,
+          tooltipContainerY: tooltipContainerY_final < STATUS_BAR_HEIGHT
+                                  ? STATUS_BAR_HEIGHT
+                                  : tooltipContainerY_final,
           tooltipTriangleDown,
           tooltipTriangleLeftMargin,
           buttonComponentContainerScale,
           buttonComponentOpacity: 1,
+          hideButton: tooltipContainerY_final < STATUS_BAR_HEIGHT
         },
         this.showZoomingInAnimation,
       );
@@ -313,6 +325,8 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     }
 
     const multipleSelection = this.props.multipleSelection
+    const showResetButton = this.props.showResetButton
+    const showApplyButton = this.props.showApplyButton
 
     return (
       <TouchableOpacity
@@ -336,6 +350,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
         >
           <Animated.View style={[
             styles.overlay,
+            this.state.hideButton && {zIndex: 1},
             this.props.overlayStyle,
             { opacity: this.state.opacity },
           ]}>
@@ -350,8 +365,9 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
               <Animated.View
                 style={[
                   styles.tooltipContainer,
-                  this.props.tooltipContainerStyle,
                   tooltipContainerStyle,
+                  this.props.tooltipContainerStyle,
+                  // tooltipContainerStyle,
                 ]}
               >
                 <View
@@ -369,15 +385,19 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
                       </View>
                     }
                     {items}
-                    {multipleSelection && // container with APPLY button
+                    {(showApplyButton || showResetButton) && // container with APPLY button
                       <View style={[styles.applyButtonContainer, {borderTopColor: this.props.labelSeparatorColor}]}>
                         <View style={{flexDirection: 'row'}}>
-                            <TouchableOpacity onPress={this.onReset} style={{paddingVertical: 4, width: 60, backgroundColor: 'white', borderRadius: 7, borderWidth: 1, borderColor: '#0e3d5e', alignItems: 'center', justifyContent: 'center', marginRight: 20}}  hitSlop={{top: 10, bottom: 10, right: 10, left: 10}}>
-                                <Text style={styles.resetText}>Reset</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity disabled={false} onPress={this.toggle} style={{paddingVertical: 2, width: 60, backgroundColor: '#0e3d5e', borderRadius: 7, alignItems: 'center', justifyContent: 'center', marginRight: 10}} hitSlop={{top: 10, bottom: 10, right: 10, left: 10}}>
-                                <Text style={styles.applyText}>Apply</Text>
-                            </TouchableOpacity>
+                            {showResetButton &&
+                              <TouchableOpacity onPress={this.onReset} style={styles.resetButton}  hitSlop={{top: 10, bottom: 10, right: 10, left: 10}}>
+                                  <Text style={styles.resetText}>Reset</Text>
+                              </TouchableOpacity>
+                            }
+                            {showApplyButton &&
+                              <TouchableOpacity disabled={false} onPress={this.toggle} style={styles.applyButton} hitSlop={{top: 10, bottom: 10, right: 10, left: 10}}>
+                                  <Text style={styles.applyText}>Apply</Text>
+                              </TouchableOpacity>
+                            }
                         </View>
                       </View>
                     }
@@ -400,6 +420,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
             transform: [
               { scale: this.state.buttonComponentContainerScale },
             ],
+            // zIndex: 2
           }}>
             <TouchableOpacity
               onPress={() => {
@@ -493,6 +514,7 @@ const styles = StyleSheet.create({
   overlay: {
     backgroundColor: 'rgba(0,0,0,0.5)',
     flex: 1,
+    // zIndex: 1
   },
   innerContainer: {
     backgroundColor: 'transparent',
@@ -544,6 +566,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     alignSelf: 'stretch',
     overflow: 'hidden',
+    // zIndex: 2
   },
   topHeaderContainer: {
     flexDirection: 'row',
@@ -578,6 +601,26 @@ const styles = StyleSheet.create({
     color: '#0e3d5e',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  resetButton: {
+    paddingVertical: 4,
+    width: 60,
+    backgroundColor: 'white',
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: '#0e3d5e',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10
+  },
+  applyButton: {
+    paddingVertical: 2,
+    width: 60,
+    backgroundColor: '#0e3d5e',
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 10
   },
 
 });
