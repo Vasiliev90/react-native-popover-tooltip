@@ -199,6 +199,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     const componentWrapper = this.wrapperComponent;
     invariant(componentWrapper, "should be set");
     componentWrapper.measure((x, y, width, height, pageX, pageY) => {
+      const isIphoneX = window.height === 812
       const fullWidth = pageX + tooltipContainerWidth
         + (width - tooltipContainerWidth) / 2;
       const tooltipContainerX_final = fullWidth > window.width
@@ -212,7 +213,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
         tooltipContainerY_final = pageY + height + 20;
         tooltipTriangleDown = false;
       }
-      if (pageY + tooltipContainerHeight + 80 > window.height) {
+      if (pageY + tooltipContainerHeight + 80 > window.height - (isIphoneX ? 100 : 0)) {
         tooltipContainerY_final = pageY - tooltipContainerHeight - 20;
         tooltipTriangleDown = true;
       }
