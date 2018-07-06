@@ -79,12 +79,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 10
+    padding: 15
   },
   selectedIcon: {
     resizeMode: 'contain',
     width: 15,
-    height: 15
+    height: 15,
   },
 });
 

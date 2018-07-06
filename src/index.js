@@ -43,6 +43,8 @@ type Props = {
   labelStyle?: StyleObj,
   setBelow: bool,
   multipleSelection: bool,
+  showApplyButton: bool,
+  showResetButton: bool,
   animationType?: "timing" | "spring",
   onRequestClose: () => void,
   triangleOffset: number,
@@ -178,8 +180,9 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
 
   onPressItem = (userCallback: () => void) => {
     const multipleSelection = this.props.multipleSelection
+    const showApplyButton = this.props.showApplyButton
 
-    !multipleSelection && this.toggle();
+    !multipleSelection && !showApplyButton && this.toggle();
     userCallback();
   }
 
@@ -213,7 +216,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
         tooltipContainerY_final = pageY + height + 20;
         tooltipTriangleDown = false;
       }
-      if (pageY + tooltipContainerHeight + 80 > window.height - (isIphoneX ? 100 : 0)) {
+      if (pageY + tooltipContainerHeight + 80 > window.height - (isIphoneX ? 150 : 0)) {
         tooltipContainerY_final = pageY - tooltipContainerHeight - 20;
         tooltipTriangleDown = true;
       }
@@ -285,7 +288,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
           label={item.label}
           isActive={item.isActive}
           onPressUserCallback={item.onPress}
-          onPress={this.onPressItem}
+          onPress={this.onPressItem.bind(this)}
           containerStyle={classes}
           labelStyle={this.props.labelStyle}
           selectedIcon={this.props.selectedIcon}
@@ -380,7 +383,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
                     styles.allItemContainer,
                     this.props.tooltipContainerStyle,
                   ]}>
-                    {multipleSelection && // container with APPLY button
+                    {true && // container with APPLY button
                       <View style={[styles.topHeaderContainer, {borderBottomColor: this.props.labelSeparatorColor}]}>
                         <Text style={styles.applyTextSelect}>Select {this.props.name}</Text>
                       </View>
