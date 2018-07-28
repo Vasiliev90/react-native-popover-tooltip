@@ -26,9 +26,6 @@ import PopoverTooltipItem, { type Label, labelPropType }
 
 const window = Dimensions.get('window');
 
-const isIphoneX = window.height === 812
-const STATUS_BAR_HEIGHT = isIphoneX ? 50 : 20
-
 type Props = {
   buttonComponent: React.Node,
   buttonComponentExpandRatio: number,
@@ -40,11 +37,11 @@ type Props = {
   labelContainerStyle?: StyleObj,
   labelSeparatorColor: string,
   name: string,
+  eventsBottomCheckboxText: string,
   labelStyle?: StyleObj,
   setBelow: bool,
   multipleSelection: bool,
-  showApplyButton: bool,
-  showResetButton: bool,
+  eventsBottomCheckboxActive: bool,
   animationType?: "timing" | "spring",
   onRequestClose: () => void,
   triangleOffset: number,
@@ -53,6 +50,7 @@ type Props = {
   onCloseTooltipMenu?: () => void,
   onPress?: () => void,
   onReset?: () => void,
+  onEventsBottomCheckboxPress?: () => void,
   componentContainerStyle?: StyleObj,
   timingConfig?: { duration?: number },
   springConfig?: { tension?: number, friction?: number },
@@ -92,12 +90,12 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     labelContainerStyle: ViewPropTypes.style,
     labelSeparatorColor: PropTypes.string,
     name: PropTypes.string,
+    eventsBottomCheckboxText: PropTypes.string,
     selectedIcon: PropTypes.number,
     labelStyle: Text.propTypes.style,
     setBelow: PropTypes.bool,
     multipleSelection: PropTypes.bool,
-    showApplyButton: PropTypes.bool,
-    showResetButton: PropTypes.bool,
+    eventsBottomCheckboxActive: PropTypes.bool,
     animationType: PropTypes.oneOf([ "timing", "spring" ]),
     onRequestClose: PropTypes.func,
     triangleOffset: PropTypes.number,
@@ -106,6 +104,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     onCloseTooltipMenu: PropTypes.func,
     onPress: PropTypes.func,
     onReset: PropTypes.func,
+    onEventsBottomCheckboxPress: PropTypes.func,
     componentContainerStyle: ViewPropTypes.style,
     timingConfig: PropTypes.object,
     springConfig: PropTypes.object,
@@ -117,8 +116,6 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     onRequestClose: () => {},
     setBelow: false,
     multipleSelection: false,
-    showApplyButton: false,
-    showResetButton: false,
     delayLongPress: 0,
     triangleOffset: 0,
   };
@@ -143,7 +140,6 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
       tooltipContainerX: undefined,
       tooltipContainerY: undefined,
       buttonComponentOpacity: 0,
-      hideButton: false
     };
 
     this.onReset = this.onReset.bind(this)
@@ -180,9 +176,8 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
 
   onPressItem = (userCallback: () => void) => {
     const multipleSelection = this.props.multipleSelection
-    const showApplyButton = this.props.showApplyButton
 
-    !multipleSelection && !showApplyButton && this.toggle();
+    !multipleSelection && this.toggle();
     userCallback();
   }
 
@@ -202,7 +197,6 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     const componentWrapper = this.wrapperComponent;
     invariant(componentWrapper, "should be set");
     componentWrapper.measure((x, y, width, height, pageX, pageY) => {
-      const isIphoneX = window.height === 812
       const fullWidth = pageX + tooltipContainerWidth
         + (width - tooltipContainerWidth) / 2;
       const tooltipContainerX_final = fullWidth > window.width
@@ -216,7 +210,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
         tooltipContainerY_final = pageY + height + 20;
         tooltipTriangleDown = false;
       }
-      if (pageY + tooltipContainerHeight + 80 > window.height - (isIphoneX ? 150 : 0)) {
+      if (pageY + tooltipContainerHeight + 80 > window.height) {
         tooltipContainerY_final = pageY - tooltipContainerHeight - 20;
         tooltipTriangleDown = true;
       }
@@ -231,7 +225,6 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
           tooltipContainerY_final,
         ],
       });
-
       const buttonComponentContainerScale =
         this.state.tooltipContainerScale.interpolate({
           inputRange: [0, 1],
@@ -248,14 +241,11 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
           height,
           tooltipContainerX: 0,
           // tooltipContainerX,
-          tooltipContainerY: tooltipContainerY_final < STATUS_BAR_HEIGHT
-                                  ? STATUS_BAR_HEIGHT
-                                  : tooltipContainerY_final,
+          tooltipContainerY,
           tooltipTriangleDown,
           tooltipTriangleLeftMargin,
           buttonComponentContainerScale,
           buttonComponentOpacity: 1,
-          hideButton: tooltipContainerY_final < STATUS_BAR_HEIGHT
         },
         this.showZoomingInAnimation,
       );
@@ -288,7 +278,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
           label={item.label}
           isActive={item.isActive}
           onPressUserCallback={item.onPress}
-          onPress={this.onPressItem.bind(this)}
+          onPress={this.onPressItem}
           containerStyle={classes}
           labelStyle={this.props.labelStyle}
           selectedIcon={this.props.selectedIcon}
@@ -329,8 +319,6 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     }
 
     const multipleSelection = this.props.multipleSelection
-    const showResetButton = this.props.showResetButton
-    const showApplyButton = this.props.showApplyButton
 
     return (
       <TouchableOpacity
@@ -354,7 +342,6 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
         >
           <Animated.View style={[
             styles.overlay,
-            this.state.hideButton && {zIndex: 1},
             this.props.overlayStyle,
             { opacity: this.state.opacity },
           ]}>
@@ -369,9 +356,8 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
               <Animated.View
                 style={[
                   styles.tooltipContainer,
-                  tooltipContainerStyle,
                   this.props.tooltipContainerStyle,
-                  // tooltipContainerStyle,
+                  tooltipContainerStyle,
                 ]}
               >
                 <View
@@ -383,25 +369,35 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
                     styles.allItemContainer,
                     this.props.tooltipContainerStyle,
                   ]}>
-                    {true && // container with APPLY button
+                    {multipleSelection && // container with APPLY button
                       <View style={[styles.topHeaderContainer, {borderBottomColor: this.props.labelSeparatorColor}]}>
                         <Text style={styles.applyTextSelect}>Select {this.props.name}</Text>
                       </View>
                     }
                     {items}
-                    {(showApplyButton || showResetButton) && // container with APPLY button
+                    {multipleSelection && // container with APPLY button
                       <View style={[styles.applyButtonContainer, {borderTopColor: this.props.labelSeparatorColor}]}>
                         <View style={{flexDirection: 'row'}}>
-                            {showResetButton &&
-                              <TouchableOpacity onPress={this.onReset} style={styles.resetButton}  hitSlop={{top: 10, bottom: 10, right: 10, left: 10}}>
-                                  <Text style={styles.resetText}>Reset</Text>
+                            {!!this.props.eventsBottomCheckboxText &&
+                              <TouchableOpacity onPress={() => {
+                                                  this.props.onEventsBottomCheckboxPress(0)
+                                                }}
+                                                hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+                                                style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+                                  <View style={{width: 15, height: 15, borderWidth: 1, justifyContent: 'center', alignItems: 'center'}}>
+                                      {!!this.props.eventsBottomCheckboxActive && <Image source={this.props.selectedIcon} style={{width: 10, height: 10, resizeMode: 'contain'}}/>}
+                                  </View>
+                                  <Text style={{marginLeft: 10}}>{this.props.eventsBottomCheckboxText}</Text>
                               </TouchableOpacity>
                             }
-                            {showApplyButton &&
-                              <TouchableOpacity disabled={false} onPress={this.toggle} style={styles.applyButton} hitSlop={{top: 10, bottom: 10, right: 10, left: 10}}>
-                                  <Text style={styles.applyText}>Apply</Text>
-                              </TouchableOpacity>
-                            }
+                        </View>
+                        <View style={{flexDirection: 'row'}}>
+                            <TouchableOpacity onPress={this.onReset} style={{paddingVertical: 4, width: 60, backgroundColor: 'white', borderRadius: 7, borderWidth: 1, borderColor: '#0e3d5e', alignItems: 'center', justifyContent: 'center', marginRight: 20}}  hitSlop={{top: 10, bottom: 10, right: 10, left: 10}}>
+                                <Text style={styles.resetText}>Reset</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity disabled={false} onPress={this.toggle} style={{paddingVertical: 2, width: 60, backgroundColor: '#0e3d5e', borderRadius: 7, alignItems: 'center', justifyContent: 'center', marginRight: 10}} hitSlop={{top: 10, bottom: 10, right: 10, left: 10}}>
+                                <Text style={styles.applyText}>Apply</Text>
+                            </TouchableOpacity>
                         </View>
                       </View>
                     }
@@ -424,7 +420,6 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
             transform: [
               { scale: this.state.buttonComponentContainerScale },
             ],
-            // zIndex: 2
           }}>
             <TouchableOpacity
               onPress={() => {
@@ -518,7 +513,6 @@ const styles = StyleSheet.create({
   overlay: {
     backgroundColor: 'rgba(0,0,0,0.5)',
     flex: 1,
-    // zIndex: 1
   },
   innerContainer: {
     backgroundColor: 'transparent',
@@ -570,7 +564,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     alignSelf: 'stretch',
     overflow: 'hidden',
-    // zIndex: 2
   },
   topHeaderContainer: {
     flexDirection: 'row',
@@ -590,7 +583,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderTopWidth: 1,
     alignItems: 'center',
-    justifyContent: 'flex-end'
+    justifyContent: 'space-between'
   },
   applyTextSelect: {
     color: 'gray',
@@ -605,26 +598,6 @@ const styles = StyleSheet.create({
     color: '#0e3d5e',
     fontSize: 12,
     fontWeight: 'bold',
-  },
-  resetButton: {
-    paddingVertical: 4,
-    width: 60,
-    backgroundColor: 'white',
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: '#0e3d5e',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10
-  },
-  applyButton: {
-    paddingVertical: 2,
-    width: 60,
-    backgroundColor: '#0e3d5e',
-    borderRadius: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 10
   },
 
 });
