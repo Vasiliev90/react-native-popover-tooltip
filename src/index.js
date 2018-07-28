@@ -50,7 +50,10 @@ type Props = {
   onCloseTooltipMenu?: () => void,
   onPress?: () => void,
   onReset?: () => void,
+<<<<<<< HEAD
   onEventsBottomCheckboxPress?: () => void,
+=======
+>>>>>>> 7ca8ea36a00255e9e9e429560625d2b6062f428b
   componentContainerStyle?: StyleObj,
   timingConfig?: { duration?: number },
   springConfig?: { tension?: number, friction?: number },
@@ -104,7 +107,10 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
     onCloseTooltipMenu: PropTypes.func,
     onPress: PropTypes.func,
     onReset: PropTypes.func,
+<<<<<<< HEAD
     onEventsBottomCheckboxPress: PropTypes.func,
+=======
+>>>>>>> 7ca8ea36a00255e9e9e429560625d2b6062f428b
     componentContainerStyle: ViewPropTypes.style,
     timingConfig: PropTypes.object,
     springConfig: PropTypes.object,
@@ -378,6 +384,7 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
                     {multipleSelection && // container with APPLY button
                       <View style={[styles.applyButtonContainer, {borderTopColor: this.props.labelSeparatorColor}]}>
                         <View style={{flexDirection: 'row'}}>
+<<<<<<< HEAD
                             {!!this.props.eventsBottomCheckboxText &&
                               <TouchableOpacity onPress={() => {
                                                   this.props.onEventsBottomCheckboxPress(0)
@@ -392,6 +399,8 @@ class PopoverTooltip extends React.PureComponent<Props, State> {
                             }
                         </View>
                         <View style={{flexDirection: 'row'}}>
+=======
+>>>>>>> 7ca8ea36a00255e9e9e429560625d2b6062f428b
                             <TouchableOpacity onPress={this.onReset} style={{paddingVertical: 4, width: 60, backgroundColor: 'white', borderRadius: 7, borderWidth: 1, borderColor: '#0e3d5e', alignItems: 'center', justifyContent: 'center', marginRight: 20}}  hitSlop={{top: 10, bottom: 10, right: 10, left: 10}}>
                                 <Text style={styles.resetText}>Reset</Text>
                             </TouchableOpacity>
